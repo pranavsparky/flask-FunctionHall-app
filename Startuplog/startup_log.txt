@@ -1,0 +1,16 @@
+================================== 
+Flask App Startup Attempt 
+Date/Time: 28-11-2025 23:31:07.28 
+Working Directory: C:\Pranav\Personal_projects\Functionhall_bill_app_web 
+================================== 
+Waiting 5 seconds for system... 
+Checking Python installation... 
+Python 3.14.0
+Python found successfully 
+app.py found 
+No virtual environment found, using system Python 
+Checking for existing Flask instances... 
+Starting Flask application... 
+ERROR: Flask app failed to start 
+================================== 
+ 

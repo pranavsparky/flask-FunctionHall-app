@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Function Hall Booking Quotation</title>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 28px 0 40px 0;
+      overflow-y: auto;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 22px 26px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      width: 820px;
+      max-width: 96%;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    /* FIX 1 → Title should be black */
+    h2 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: black !important;
+      margin-bottom: 18px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0b5ed7;
+      margin-top: 16px;
+    }
+
+    /* Only Room Details header black */
+    #roomDetailsHeader {
+      color: black !important;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .row > div {
+      flex: 1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    th {
+      background-color: #0b5ed7;
+      color: white;
+      font-weight: 700;
+    }
+
+    /* FIX 2 + FIX 3 → Bigger text + checkbox closer */
+    .room-needed-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;        /* closer gap */
+      margin: 12px 0;
+    }
+
+    .room-needed-row label {
+      font-size: 16px !important;   /* bigger font */
+      font-weight: 700 !important;
+    }
+
+    .room-needed-row input[type="checkbox"] {
+      transform: scale(1.25);   /* slightly larger checkbox */
+      margin-left: 3px;
+      cursor: pointer;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #0b5ed7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 700;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #084ea0;
+    }
+
+    .designed-by-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .designed-by-footer img {
+      width: 28px;
+      height: 28px;
+    }
+  </style>
+
+</head>
+<body>
+
+  <div class="container">
+
+    <div style="text-align:center; margin-bottom:8px;">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="max-width:180px;">
+    </div>
+
+    <h2>Function Hall Booking Quotation</h2>
+
+    <form id="billForm" action="/generate" method="POST" target="_blank">
+
+      <div class="row">
+        <div>
+          <label>Name</label>
+          <input type="text" name="name" required>
+        </div>
+
+        <div>
+          <label>Pax</label>
+          <input type="number" name="pax" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Mobile Number</label>
+          <input type="text" name="mobile" required>
+        </div>
+
+        <div>
+          <label>Event Type</label>
+          <input type="text" name="event_type" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Function Checkin Date and Time</label>
+          <input type="datetime-local" id="checkin" name="checkin" required>
+        </div>
+
+        <div>
+          <label>Function Checkout Date and Time</label>
+          <input type="datetime-local" id="checkout" name="checkout" required>
+        </div>
+      </div>
+
+      <!-- FIXED Room Needed -->
+      <div class="room-needed-row">
+        <label>Room Needed</label>
+        <input type="checkbox" id="room_needed" name="room_needed">
+      </div>
+
+      <!-- FIXED → Black "Room Details" header -->
+      <h3 id="roomDetailsHeader">Room Details</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Room Type</th>
+            <th>No. of Rooms</th>
+            <th>Extra Bed/Room</th>
+            <th>AC or Non-AC</th>
+            <th>Rent (Per Room)</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Double Occupancy</td>
+            <td><input type="number" id="double_rooms" name="double_rooms" disabled></td>
+            <td><input type="number" id="double_extra" name="double_extra" disabled></td>
+            <td>
+              <select id="double_ac" name="double_ac" disabled>
+                <option value="">-- Select --</option>
+                <option value="AC">AC</option>
+                <option value="Non-AC">Non-AC</option>
+              </select>
+            </td>
+            <td><input type="number" id="double_rent" name="double_rent" disabled></td>
+          </tr>
+
+          <tr>
+            <td>Triple Occupancy</td>
+            <td><input type="number" id="triple_rooms" name="triple_rooms" disabled></td>
+            <td><input type="number" id="triple_extra_bed" name="triple_extra_bed" disabled></td>
+            <td>
+              <select id="triple_ac" name="triple_ac" disabled>
+                <option value="">-- Select --</option>
+                <option value="AC">AC</option>
+                <option value="Non-AC">Non-AC</option>
+              </select>
+            </td>
+            <td><input type="number" id="triple_rent_per_room" name="triple_rent_per_room" disabled></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label>Advance</label>
+          <input type="number" id="advance" name="advance" value="0">
+        </div>
+
+        <div>
+          <label>Advance Payment Mode</label>
+          <select id="advance_mode" name="advance_mode" disabled>
+            <option value="">-- Select --</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Function Hall Rent (per day)</label>
+          <input type="number" id="function_rent" name="function_rent" required>
+        </div>
+
+        <div>
+          <label>Cleaning Charges (per day)</label>
+          <input type="number" id="cleaning_charges" name="cleaning_charges" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Security Charges (per day)</label>
+          <input type="number" id="security_charges" name="security_charges" required>
+        </div>
+
+        <div>
+          <label>Electricity Charges (per day)</label>
+          <input type="number" id="electricity_charges" name="electricity_charges" required>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label>Total Rent</label>
+          <input type="number" id="total_rent" name="total_rent" readonly>
+        </div>
+
+        <div>
+          <label>Balance</label>
+          <input type="number" id="balance" name="balance" readonly>
+        </div>
+      </div>
+
+      <div>
+        <label>Remarks</label>
+        <textarea name="remarks"></textarea>
+      </div>
+
+      <button type="submit">Generate PDF</button>
+    </form>
+  </div>
+
+  <div class="designed-by-footer">
+    Designed by <img src="{{ url_for('static', filename='PK.png') }}">
+  </div>
+
+  <script>
+    // (Your existing JS untouched except for reset logic)
+
+    const el = id => document.getElementById(id);
+
+    const roomFieldIds = [
+      "double_rooms","double_extra","double_ac","double_rent",
+      "triple_rooms","triple_extra_bed","triple_ac","triple_rent_per_room"
+    ];
+
+    function toggleRoomFields() {
+      const enabled = el("room_needed").checked;
+      roomFieldIds.forEach(id => {
+        const node = el(id);
+        node.disabled = !enabled;
+        if (!enabled) node.value = "";
+      });
+      updateTotals();
+    }
+
+    function parseNum(v) {
+      const n = parseFloat(v);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function computeNumDays() {
+      const ci = el("checkin").value;
+      const co = el("checkout").value;
+      if (!ci || !co) return 1;
+      const d1 = new Date(ci);
+      const d2 = new Date(co);
+      let diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+      return diff < 1 ? 1 : diff;
+    }
+
+    function updateTotals() {
+      const roomNeeded = el("room_needed").checked;
+
+      const doubleRooms = roomNeeded ? parseNum(el("double_rooms").value) : 0;
+      const doubleRent = roomNeeded ? parseNum(el("double_rent").value) : 0;
+
+      const tripleRooms = roomNeeded ? parseNum(el("triple_rooms").value) : 0;
+      const tripleRent = roomNeeded ? parseNum(el("triple_rent_per_room").value) : 0;
+
+      const roomTotal = (doubleRooms * doubleRent) + (tripleRooms * tripleRent);
+
+      const functionRent = parseNum(el("function_rent").value);
+      const cleaning = parseNum(el("cleaning_charges").value);
+      const security = parseNum(el("security_charges").value);
+      const electricity = parseNum(el("electricity_charges").value);
+      const advance = parseNum(el("advance").value);
+      const days = computeNumDays();
+
+      const perDayTotal = roomTotal + functionRent + cleaning + security + electricity;
+      const total = perDayTotal * days;
+      const balance = total - advance;
+
+      el("total_rent").value = total.toFixed(2);
+      el("balance").value = balance.toFixed(2);
+
+      el("advance_mode").disabled = advance <= 0;
+      if (advance <= 0) el("advance_mode").value = "";
+    }
+
+    // Reset after generating PDF
+    document.getElementById("billForm").addEventListener("submit", function () {
+      setTimeout(() => {
+        document.getElementById("billForm").reset();
+        toggleRoomFields();
+        updateTotals();
+      }, 500);
+    });
+
+    function attachEvents() {
+      [
+        "checkin","checkout","function_rent","cleaning_charges",
+        "security_charges","electricity_charges","advance",
+        "double_rooms","double_rent","triple_rooms","triple_rent_per_room"
+      ].forEach(id => {
+        if (el(id)) el(id).addEventListener("input", updateTotals);
+      });
+
+      roomFieldIds.forEach(id => {
+        el(id).addEventListener("change", updateTotals);
+      });
+
+      el("room_needed").addEventListener("change", toggleRoomFields);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      attachEvents();
+      toggleRoomFields();
+      updateTotals();
+    });
+  </script>
+
+</body>
+</html>

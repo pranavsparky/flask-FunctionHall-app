@@ -1,0 +1,36 @@
+git init
+git add .
+git commit -m "Initial commit: Flask billing app"
+git remote add origin https://github.com/pranavsparky/flask-billing-app.git
+git branch -M main
+git push -u origin main
+
+===================================================================================
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Users\Pranav\Desktop\bill_app_web> git init
+Reinitialized existing Git repository in C:/Users/Pranav/Desktop/bill_app_web/.git/
+PS C:\Users\Pranav\Desktop\bill_app_web> git add .
+PS C:\Users\Pranav\Desktop\bill_app_web> git commit -m "Initial commit: Flask billing app"
+[main ac4391c] Initial commit: Flask billing app
+ 4 files changed, 295 insertions(+), 15 deletions(-)
+ create mode 100644 git_steps.txt
+PS C:\Users\Pranav\Desktop\bill_app_web> git remote add origin https://github.com/pranavsparky/flask-billing-app.git
+error: remote origin already exists.
+PS C:\Users\Pranav\Desktop\bill_app_web> git branch -M main
+PS C:\Users\Pranav\Desktop\bill_app_web> git push -u origin main
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Delta compression using up to 14 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 4.10 KiB | 1.02 MiB/s, done.
+Total 6 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/pranavsparky/flask-billing-app.git
+   a03d284..ac4391c  main -> main
+branch 'main' set up to track 'origin/main'.
+PS C:\Users\Pranav\Desktop\bill_app_web>
