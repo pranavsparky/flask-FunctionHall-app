@@ -271,7 +271,7 @@ def generate_bill(data):
         ["Function Hall Rent", _fmt(f_rent)],
         ["Cleaning", _fmt(clean)],
         ["Security", _fmt(sec)],
-        ["Electricity", _fmt(elec)],
+        ["Electricity(per-unit)", _fmt(elec)],
         ["Total Rent", _fmt(total_rent)],
     ])
 

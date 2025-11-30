@@ -1,0 +1,13 @@
+First Time Only (Initial Setup)
+
+cd C:\Pranav\Personal_projects\Functionhall_bill_app_web
+git init
+git remote add origin https://github.com/pranavsparky/flask-FunctionHall-app.git
+git pull origin main
+
+
+Daily Workflow — When You Update Files Locally
+
+git add .
+git commit -m "update"
+git push
