@@ -1,7 +1,7 @@
 git init
 git add .
-git commit -m "Initial commit: Flask billing app"
-git remote add origin https://github.com/pranavsparky/flask-billing-app.git
+git commit -m "Initial commit: Flask Hotel billing app"
+git remote add origin https://github.com/pranavsparky/flask-FunctionHall-app.git
 git branch -M main
 git push -u origin main
 

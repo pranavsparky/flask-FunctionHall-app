@@ -4,10 +4,12 @@ from reportlab.platypus import (
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
-from reportlab.lib.units import mm
 import os, tempfile
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from reportlab.lib.units import mm
 
+# ---------- TIMEZONE FIX (IST manual offset) ----------
+IST = timezone(timedelta(hours=5, minutes=30))
 
 def _f(v):
     try:
@@ -15,13 +17,11 @@ def _f(v):
     except:
         return 0.0
 
-
 def _fmt(v):
     try:
         return f"{float(v):.2f}"
     except:
         return str(v or "")
-
 
 def _logo_path():
     return os.path.join(os.path.dirname(__file__), "static", "logo.png")
@@ -62,7 +62,7 @@ def draw_header_page1(canvas, doc, title_text):
 # FOOTER + SIGNATURES PAGE 2 -----------------------------------------------------------------------
 def draw_footer_and_signatures_page2(canvas, doc):
     w, h = A4
-    y = 90  # signature position
+    y = 90  
 
     canvas.line(60, y, 240, y)
     canvas.setFont("Helvetica", 10)
@@ -113,7 +113,7 @@ def generate_bill(data):
     story = []
 
     advance_amt = _f(data.get("advance"))
-    advance_mode = data.get("advance_mode") or ""  # FIXED
+    advance_mode = data.get("advance_mode") or ""
 
     title_text = (
         "Function Hall Booking Details"
@@ -121,7 +121,10 @@ def generate_bill(data):
         else "Function Hall Booking Quotation"
     )
 
-    now = datetime.now().strftime("%d-%m-%Y %I:%M %p")
+    # ----------- CURRENT TIMESTAMP IN IST -------------
+    now_kolkata = datetime.now(IST)
+    now = now_kolkata.strftime("%d-%m-%Y Time %H:%M")
+
     timestamp = (
         f"Booking confirmed on: {now}"
         if advance_amt > 0
@@ -137,6 +140,17 @@ def generate_bill(data):
     story.append(Spacer(1, 4))
 
     # ---------------- Guest Details ------------------------------------------------------
+
+    def fmt_check_dt(raw):
+        if not raw:
+            return ""
+        try:
+            dt = datetime.strptime(raw, "%Y-%m-%dT%H:%M")
+            dt = dt.replace(tzinfo=IST)
+            return dt.strftime("%d-%m-%Y Time %H:%M")
+        except:
+            return raw
+
     story.append(Paragraph("Guest Details:", header_style))
 
     guest_table_data = [
@@ -145,8 +159,8 @@ def generate_bill(data):
         ["Pax", data.get("pax") or ""],
         ["Mobile", data.get("mobile") or ""],
         ["Event Type", data.get("event_type") or ""],
-        ["Function Check-in", data.get("checkin") or ""],
-        ["Function Check-out", data.get("checkout") or ""],
+        ["Function Check-in", fmt_check_dt(data.get("checkin"))],
+        ["Function Check-out", fmt_check_dt(data.get("checkout"))],
     ]
 
     guest_tbl = Table(
@@ -173,57 +187,58 @@ def generate_bill(data):
     story.append(Spacer(1, 8))
 
     # ---------------- Room Details -------------------------------------------------------
-    story.append(Paragraph("Room Details:", header_style))
+    room_needed = data.get("room_needed") == "on"
 
-    room_data = [
-        ["Room Type", "No. of Rooms", "Extra Bed/Room", "AC/Non-AC", "Rent (Per Room)"],
-        [
-            "Double",
-            data.get("double_rooms") or "",
-            data.get("double_extra") or "",
-            data.get("double_ac") or "",
-            _fmt(data.get("double_rent")),
-        ],
-        [
-            "Triple",
-            data.get("triple_rooms") or "",
-            data.get("triple_extra_bed") or "",
-            data.get("triple_ac") or "",
-            _fmt(data.get("triple_rent_per_room")),
-        ],
-    ]
+    if room_needed:
+        story.append(Paragraph("Room Details:", header_style))
 
-    room_tbl = Table(
-        room_data,
-        colWidths=[
-            doc.width * 0.25,
-            doc.width * 0.18,
-            doc.width * 0.18,
-            doc.width * 0.19,
-            doc.width * 0.20,
-        ],
-    )
-
-    room_tbl.setStyle(
-        TableStyle(
+        room_data = [
+            ["Room Type", "No. of Rooms", "Extra Bed/Room", "AC/Non-AC", "Rent (Per Room)"],
             [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e9f0ff")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#0b5ed7")),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ]
-        )
-    )
+                "Double",
+                data.get("double_rooms") or "",
+                data.get("double_extra") or "",
+                data.get("double_ac") or "",
+                _fmt(data.get("double_rent")),
+            ],
+            [
+                "Triple",
+                data.get("triple_rooms") or "",
+                data.get("triple_extra_bed") or "",
+                data.get("triple_ac") or "",
+                _fmt(data.get("triple_rent_per_room")),
+            ],
+        ]
 
-    story.append(room_tbl)
-    story.append(Spacer(1, 8))
+        room_tbl = Table(
+            room_data,
+            colWidths=[
+                doc.width * 0.25,
+                doc.width * 0.18,
+                doc.width * 0.18,
+                doc.width * 0.19,
+                doc.width * 0.20,
+            ],
+        )
+
+        room_tbl.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e9f0ff")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#0b5ed7")),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                    ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ]
+            )
+        )
+
+        story.append(room_tbl)
+        story.append(Spacer(1, 8))
 
     # ---------------- Payment Summary -------------------------------------------------------
     story.append(Paragraph("Payment Summary:", header_style))
-
-    room_needed = data.get("room_needed") == "on"
 
     d_r = _f(data.get("double_rent"))
     d_n = _f(data.get("double_rooms"))
@@ -247,20 +262,22 @@ def generate_bill(data):
     total_rent = per_day_total * days
     balance = total_rent - advance_amt
 
-    pay_data = [
-        ["Description", "Value"],
-        ["Room Rent (per day)", _fmt(room_total)],
-        ["Function Hall Rent (per day)", _fmt(f_rent)],
-        ["Cleaning (per day)", _fmt(clean)],
-        ["Security (per day)", _fmt(sec)],
-        ["Electricity (per day)", _fmt(elec)],
-        ["Number of Days", str(days)],
+    pay_data = [["Description", "Value"]]
+
+    if room_needed:
+        pay_data.append(["Room Rent", _fmt(room_total)])
+
+    pay_data.extend([
+        ["Function Hall Rent", _fmt(f_rent)],
+        ["Cleaning", _fmt(clean)],
+        ["Security", _fmt(sec)],
+        ["Electricity", _fmt(elec)],
         ["Total Rent", _fmt(total_rent)],
-    ]
+    ])
 
     if advance_amt > 0:
         pay_data.append(["Advance Paid", _fmt(advance_amt)])
-        pay_data.append(["Advance Payment Mode", data.get("advance_mode", "")])  # FIXED
+        pay_data.append(["Advance Payment Mode", advance_mode])
         pay_data.append(["Balance", _fmt(balance)])
     else:
         pay_data.append(["Balance", _fmt(total_rent)])
@@ -270,40 +287,49 @@ def generate_bill(data):
         colWidths=[doc.width * 0.65, doc.width * 0.35],
     )
 
-    pay_tbl.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f2f6ff")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#0b5ed7")),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                ("ALIGN", (0, 1), (-1, -1), "LEFT"),
-            ]
-        )
-    )
+    tbl_style = [
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f2f6ff")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#0b5ed7")),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("ALIGN", (0, 1), (-1, -1), "LEFT"),
+    ]
 
+    balance_row_idx = None
+    for i, row in enumerate(pay_data):
+        if i == 0:
+            continue
+        if str(row[0]).strip().lower() == "balance":
+            balance_row_idx = i
+            break
+
+    if balance_row_idx is not None:
+        tbl_style.append(("FONTNAME", (0, balance_row_idx), (-1, balance_row_idx), "Helvetica-Bold"))
+        tbl_style.append(("FONTSIZE", (0, balance_row_idx), (-1, balance_row_idx), 11))
+
+    pay_tbl.setStyle(TableStyle(tbl_style))
     story.append(pay_tbl)
     story.append(Spacer(1, 8))
 
     # ---------------- Remarks -------------------------------------------------------------
-    remarks = data.get("remarks") or ""
-    if remarks.strip():
+    remarks = data.get("remarks", "").strip()
+    if remarks:
         story.append(Paragraph("Remarks:", header_style))
         for line in remarks.splitlines():
             story.append(Paragraph(line, normal))
 
     # ---------------- PAGE 2 -------------------------------------------------------------
     story.append(PageBreak())
-    story.append(Spacer(1, 4))
+    ##story.append(Spacer(1, 4))
     story.append(Paragraph("Important Terms & Conditions:", header_style))
 
     if advance_amt > 0:
         terms = [
-            "1. Event date once booked cannot be changed; advance amount paid is non-refundable.",
+            "1. Event date once booked cannot be changed; advance amount is non-refundable.",
             "2. Management is not responsible for loss or damage to guests’ personal belongings.",
             "3. The function hall will be handed over 4 hours before the scheduled event time.",
-            "4. Guests will be held responsible for any damage or missing items belonging to the hall.",
-            "5. Power-backup charges (2,500 per hour) apply only if the generator is used.",
+            "4. The customer named in the invoice will be held responsible for any damage or missing items belonging to the function hall.",
+            "5. Power-backup charges (2,500 rupees per hour) apply only if the generator is used.",
             "6. Balance must be paid as soon as the event concludes.",
             "7. Electricity meter reading starts when the hall is given to the decoration team.",
             "8. Live cooking counter is not allowed inside the hall.",
@@ -314,8 +340,8 @@ def generate_bill(data):
             "2. Event date once booked cannot be changed; advance amount is non-refundable.",
             "3. Management is not responsible for loss or damage to guests’ personal belongings.",
             "4. The function hall will be handed over 4 hours before the scheduled event time.",
-            "5. Guests are responsible for any damage or missing items belonging to the hall.",
-            "6. Power-backup charges (2,500 per hour) apply only if the generator is used.",
+            "5. The customer named in the invoice will be held responsible for any damage or missing items belonging to the function hall.",
+            "6. Power-backup charges (2,500 rupees per hour) apply only if the generator is used.",
             "7. Balance must be paid as soon as the event concludes.",
             "8. Electricity meter reading starts when the hall is given to the decoration team.",
             "9. Live cooking counter is not allowed inside the hall.",

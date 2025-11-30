@@ -29,7 +29,6 @@
       box-sizing: border-box;
     }
 
-    /* FIX 1 → Title should be black */
     h2 {
       text-align: center;
       font-size: 22px;
@@ -45,7 +44,6 @@
       margin-top: 16px;
     }
 
-    /* Only Room Details header black */
     #roomDetailsHeader {
       color: black !important;
     }
@@ -95,21 +93,20 @@
       font-weight: 700;
     }
 
-    /* FIX 2 + FIX 3 → Bigger text + checkbox closer */
     .room-needed-row {
       display: flex;
       align-items: center;
-      gap: 6px;        /* closer gap */
+      gap: 6px;
       margin: 12px 0;
     }
 
     .room-needed-row label {
-      font-size: 16px !important;   /* bigger font */
+      font-size: 16px !important;
       font-weight: 700 !important;
     }
 
     .room-needed-row input[type="checkbox"] {
-      transform: scale(1.25);   /* slightly larger checkbox */
+      transform: scale(1.25);
       margin-left: 3px;
       cursor: pointer;
     }
@@ -186,6 +183,7 @@
 
       <div class="row">
         <div>
+          <!-- label updated to show required display format -->
           <label>Function Checkin Date and Time</label>
           <input type="datetime-local" id="checkin" name="checkin" required>
         </div>
@@ -196,13 +194,12 @@
         </div>
       </div>
 
-      <!-- FIXED Room Needed -->
+      <!-- Room Needed -->
       <div class="room-needed-row">
         <label>Room Needed</label>
         <input type="checkbox" id="room_needed" name="room_needed">
       </div>
 
-      <!-- FIXED → Black "Room Details" header -->
       <h3 id="roomDetailsHeader">Room Details</h3>
 
       <table>
@@ -265,24 +262,24 @@
 
       <div class="row">
         <div>
-          <label>Function Hall Rent (per day)</label>
+          <label>Function Hall Rent</label>
           <input type="number" id="function_rent" name="function_rent" required>
         </div>
 
         <div>
-          <label>Cleaning Charges (per day)</label>
+          <label>Cleaning Charges</label>
           <input type="number" id="cleaning_charges" name="cleaning_charges" required>
         </div>
       </div>
 
       <div class="row">
         <div>
-          <label>Security Charges (per day)</label>
+          <label>Security Charges</label>
           <input type="number" id="security_charges" name="security_charges" required>
         </div>
 
         <div>
-          <label>Electricity Charges (per day)</label>
+          <label>Electricity Charges</label>
           <input type="number" id="electricity_charges" name="electricity_charges" required>
         </div>
       </div>
@@ -313,8 +310,6 @@
   </div>
 
   <script>
-    // (Your existing JS untouched except for reset logic)
-
     const el = id => document.getElementById(id);
 
     const roomFieldIds = [
@@ -395,7 +390,7 @@
       });
 
       roomFieldIds.forEach(id => {
-        el(id).addEventListener("change", updateTotals);
+        if (el(id)) el(id).addEventListener("change", updateTotals);
       });
 
       el("room_needed").addEventListener("change", toggleRoomFields);
