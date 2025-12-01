@@ -360,7 +360,7 @@
       const advance = parseNum(el("advance").value);
       const days = computeNumDays();
 
-      const perDayTotal = roomTotal + functionRent + cleaning + security + electricity;
+      const perDayTotal = roomTotal + functionRent + cleaning + security;
       const total = perDayTotal * days;
       const balance = total - advance;
 

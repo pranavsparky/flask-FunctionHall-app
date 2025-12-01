@@ -336,7 +336,7 @@ def generate_bill(data):
         ]
     else:
         terms = [
-            "1. Quotation valid for 7 days only. Booking confirmed only after advance payment.",
+            "1. This quote is valid for only 7 days from the inquiry date. Your booking will be confirmed once we receive the advance payment.",
             "2. Event date once booked cannot be changed; advance amount is non-refundable.",
             "3. Management is not responsible for loss or damage to guests’ personal belongings.",
             "4. The function hall will be handed over 4 hours before the scheduled event time.",
