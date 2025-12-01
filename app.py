@@ -1,10 +1,33 @@
-from flask import Flask, render_template, request, send_file
-import os
+from flask import Flask, render_template, request, send_file, Response
 from Generate_Bill import generate_bill
+import os
 
 app = Flask(__name__)
 
+# -----------------------------------
+# BASIC AUTH (USERNAME + PASSWORD)
+# -----------------------------------
+USERNAME = "admin"
+PASSWORD = "bill123"
 
+def check_auth(username, password):
+    return username == USERNAME and password == PASSWORD
+
+def authenticate():
+    return Response(
+        "Access Denied", 401,
+        {"WWW-Authenticate": 'Basic realm="Login Required"'}
+    )
+
+@app.before_request
+def require_auth():
+    auth = request.authorization
+    if not auth or not check_auth(auth.username, auth.password):
+        return authenticate()
+
+# -----------------------------------
+# ROUTES
+# -----------------------------------
 @app.route('/')
 def home():
     return render_template('index.html')
