@@ -142,6 +142,10 @@
       width: 28px;
       height: 28px;
     }
+
+    .validation-error {
+      outline: 2px solid red;
+    }
   </style>
 
 </head>
@@ -183,7 +187,6 @@
 
       <div class="row">
         <div>
-          <!-- label updated to show required display format -->
           <label>Function Checkin Date and Time</label>
           <input type="datetime-local" id="checkin" name="checkin" required>
         </div>
@@ -194,7 +197,6 @@
         </div>
       </div>
 
-      <!-- Room Needed -->
       <div class="room-needed-row">
         <label>Room Needed</label>
         <input type="checkbox" id="room_needed" name="room_needed">
@@ -279,7 +281,7 @@
         </div>
 
         <div>
-          <label>Electricity Charges(per-unit)</label>
+          <label>Electricity Charges (per-unit)</label>
           <input type="number" id="electricity_charges" name="electricity_charges" required>
         </div>
       </div>
@@ -310,6 +312,7 @@
   </div>
 
   <script>
+
     const el = id => document.getElementById(id);
 
     const roomFieldIds = [
@@ -355,12 +358,18 @@
 
       const functionRent = parseNum(el("function_rent").value);
       const cleaning = parseNum(el("cleaning_charges").value);
+      
+      /** FIXED LINE — CORRECT VALUE PROPERTY */
       const security = parseNum(el("security_charges").value);
-      const electricity = parseNum(el("electricity_charges").value);
+
+      const electricity = parseNum(el("electricity_charges").value); // Not included
+
       const advance = parseNum(el("advance").value);
       const days = computeNumDays();
 
+      // Electricity NOT included
       const perDayTotal = roomTotal + functionRent + cleaning + security;
+
       const total = perDayTotal * days;
       const balance = total - advance;
 
@@ -371,8 +380,48 @@
       if (advance <= 0) el("advance_mode").value = "";
     }
 
-    // Reset after generating PDF
-    document.getElementById("billForm").addEventListener("submit", function () {
+    function validateForm() {
+
+      // ROOM VALIDATION
+      if (el("room_needed").checked) {
+        const doubleRooms = parseNum(el("double_rooms").value);
+        const doubleRent = parseNum(el("double_rent").value);
+
+        const tripleRooms = parseNum(el("triple_rooms").value);
+        const tripleRent = parseNum(el("triple_rent_per_room").value);
+
+        const doubleValid = doubleRooms > 0 && doubleRent > 0;
+        const tripleValid = tripleRooms > 0 && tripleRent > 0;
+
+        if (!doubleValid && !tripleValid) {
+          alert("Fill at least one valid room type (Double OR Triple).");
+          el("double_rooms").classList.add("validation-error");
+          el("double_rent").classList.add("validation-error");
+          el("triple_rooms").classList.add("validation-error");
+          el("triple_rent_per_room").classList.add("validation-error");
+          return false;
+        }
+      }
+
+      // ADVANCE VALIDATION
+      const advance = parseNum(el("advance").value);
+      const mode = el("advance_mode").value;
+
+      if (advance > 0 && (!mode || mode.trim() === "")) {
+        alert("Select Advance Payment Mode when Advance > 0.");
+        el("advance_mode").classList.add("validation-error");
+        return false;
+      }
+
+      return true;
+    }
+
+    document.getElementById("billForm").addEventListener("submit", function (ev) {
+      if (!validateForm()) {
+        ev.preventDefault();
+        return false;
+      }
+
       setTimeout(() => {
         document.getElementById("billForm").reset();
         toggleRoomFields();
@@ -380,27 +429,16 @@
       }, 500);
     });
 
-    function attachEvents() {
+    document.addEventListener("DOMContentLoaded", () => {
       [
         "checkin","checkout","function_rent","cleaning_charges",
         "security_charges","electricity_charges","advance",
         "double_rooms","double_rent","triple_rooms","triple_rent_per_room"
-      ].forEach(id => {
-        if (el(id)) el(id).addEventListener("input", updateTotals);
-      });
-
-      roomFieldIds.forEach(id => {
-        if (el(id)) el(id).addEventListener("change", updateTotals);
-      });
+      ].forEach(id => el(id)?.addEventListener("input", updateTotals));
 
       el("room_needed").addEventListener("change", toggleRoomFields);
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      attachEvents();
-      toggleRoomFields();
-      updateTotals();
     });
+
   </script>
 
 </body>
