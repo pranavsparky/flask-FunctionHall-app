@@ -258,7 +258,7 @@ def generate_bill(data):
     except:
         days = 1
 
-    per_day_total = room_total + f_rent + clean + sec + elec
+    per_day_total = room_total + f_rent + clean + sec
     total_rent = per_day_total * days
     balance = total_rent - advance_amt
 
@@ -271,7 +271,7 @@ def generate_bill(data):
         ["Function Hall Rent", _fmt(f_rent)],
         ["Cleaning", _fmt(clean)],
         ["Security", _fmt(sec)],
-        ["Electricity(per-unit)", _fmt(elec)],
+        ["Electricity Charges", f"{_fmt(elec)} Rupees Per Unit"],
         ["Total Rent", _fmt(total_rent)],
     ])
 
